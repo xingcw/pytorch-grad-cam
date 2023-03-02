@@ -36,10 +36,10 @@ class ActivationsAndGradients:
 
         output.register_hook(_store_grad)
 
-    def __call__(self, x):
+    def __call__(self, x, **kwargs):
         self.gradients = []
         self.activations = []
-        return self.model(x)
+        return self.model(x, **kwargs)
 
     def release(self):
         for handle in self.handles:

@@ -62,16 +62,16 @@ class BaseCAM:
     def forward(self,
                 input_tensor: torch.Tensor,
                 targets: List[torch.nn.Module],
-                eigen_smooth: bool = False) -> np.ndarray:
+                eigen_smooth: bool = False, 
+                **kwargs) -> np.ndarray:
 
         if self.cuda:
             input_tensor = input_tensor.cuda()
 
         if self.compute_input_gradient:
-            input_tensor = torch.autograd.Variable(input_tensor,
-                                                   requires_grad=True)
+            input_tensor = torch.autograd.Variable(input_tensor, requires_grad=True)
 
-        outputs = self.activations_and_grads(input_tensor)
+        outputs = self.activations_and_grads(input_tensor, **kwargs)
         if targets is None:
             target_categories = np.argmax(outputs.cpu().data.numpy(), axis=-1)
             targets = [ClassifierOutputTarget(
@@ -79,8 +79,7 @@ class BaseCAM:
 
         if self.uses_gradients:
             self.model.zero_grad()
-            loss = sum([target(output)
-                       for target, output in zip(targets, outputs)])
+            loss = sum([target(output) for target, output in zip(targets, outputs)])
             loss.backward(retain_graph=True)
 
         # In most of the saliency attribution papers, the saliency is
@@ -178,15 +177,15 @@ class BaseCAM:
                  input_tensor: torch.Tensor,
                  targets: List[torch.nn.Module] = None,
                  aug_smooth: bool = False,
-                 eigen_smooth: bool = False) -> np.ndarray:
+                 eigen_smooth: bool = False, 
+                 **kwargs) -> np.ndarray:
 
         # Smooth the CAM result with test time augmentation
         if aug_smooth is True:
             return self.forward_augmentation_smoothing(
                 input_tensor, targets, eigen_smooth)
 
-        return self.forward(input_tensor,
-                            targets, eigen_smooth)
+        return self.forward(input_tensor, targets, eigen_smooth, **kwargs)
 
     def __del__(self):
         self.activations_and_grads.release()
