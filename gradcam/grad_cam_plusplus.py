@@ -1,5 +1,5 @@
 import numpy as np
-from pytorch_grad_cam.base_cam import BaseCAM
+from gradcam.base_cam import BaseCAM
 
 # https://arxiv.org/abs/1710.11063
 

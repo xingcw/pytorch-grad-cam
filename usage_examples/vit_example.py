@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 import torch
 
-from pytorch_grad_cam import GradCAM, \
+from gradcam import GradCAM, \
     ScoreCAM, \
     GradCAMPlusPlus, \
     AblationCAM, \
@@ -13,10 +13,10 @@ from pytorch_grad_cam import GradCAM, \
     LayerCAM, \
     FullGrad
 
-from pytorch_grad_cam import GuidedBackpropReLUModel
-from pytorch_grad_cam.utils.image import show_cam_on_image, \
+from gradcam import GuidedBackpropReLUModel
+from gradcam.utils.image import show_cam_on_image, \
     preprocess_image
-from pytorch_grad_cam.ablation_layer import AblationLayerVit
+from gradcam.ablation_layer import AblationLayerVit
 
 
 def get_args():

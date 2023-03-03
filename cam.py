@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 import torch
 from torchvision import models
-from pytorch_grad_cam import GradCAM, \
+from gradcam import GradCAM, \
     HiResCAM, \
     ScoreCAM, \
     GradCAMPlusPlus, \
@@ -16,11 +16,11 @@ from pytorch_grad_cam import GradCAM, \
     GradCAMElementWise
 
 
-from pytorch_grad_cam import GuidedBackpropReLUModel
-from pytorch_grad_cam.utils.image import show_cam_on_image, \
+from gradcam import GuidedBackpropReLUModel
+from gradcam.utils.image import show_cam_on_image, \
     deprocess_image, \
     preprocess_image
-from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
+from gradcam.utils.model_targets import ClassifierOutputTarget
 
 
 def get_args():
