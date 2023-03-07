@@ -1,9 +1,17 @@
 import torch
 import numpy as np
 
-from typing import List, Tuple, Dict
+from typing import List, Tuple
 from gradcam.base_cam import BaseCAM
 from pipelines.utils.constants import IMG_WIDTH, IMG_HEIGHT
+
+
+class ActionErrTarget:
+    def __init__(self, act_label):
+        self.label = act_label
+    
+    def __call__(self, student_act):
+        return torch.mean((student_act - self.label) ** 2)
 
 
 def reshape_transform(tensor, height=14, width=14):
@@ -15,11 +23,11 @@ def reshape_transform(tensor, height=14, width=14):
     return result
 
 
-class MultiMAECAM(BaseCAM):
+class StudentCAM(BaseCAM):
     def __init__(self, model, target_layers, use_cuda=False,
                  reshape_transform=reshape_transform):
         super(
-            MultiMAECAM,
+            StudentCAM,
             self).__init__(
             model,
             target_layers,
@@ -35,27 +43,27 @@ class MultiMAECAM(BaseCAM):
         return np.mean(grads, axis=(2, 3))
     
     def forward(self,
-                inputs: Dict[str, torch.Tensor],
-                targets: Dict[str, torch.nn.Module],
+                input_tensor: torch.Tensor,
+                targets: List[torch.nn.Module],
                 eigen_smooth: bool = False, 
                 **kwargs) -> np.ndarray:
         
         if self.compute_input_gradient:
-            for domain, input in inputs.items():
-                inputs[domain] = torch.autograd.Variable(input, requires_grad=True)
+            input_tensor = torch.autograd.Variable(input_tensor, requires_grad=True)
 
-        preds, masks = self.activations_and_grads(inputs, **kwargs)
+        outputs = self.activations_and_grads(input_tensor, **kwargs)
 
         if self.uses_gradients:
             self.model.zero_grad()
-            loss = sum([target(preds[domain], inputs[domain], masks[domain]) for domain, target in targets.items()])
+            loss = sum([target(output) for target, output in zip(targets, outputs)])
             loss.backward(retain_graph=True)
+            
+        input_tensor = input_tensor["rgb"]
 
-        cam_per_layer = self.compute_cam_per_layer(inputs,
+        cam_per_layer = self.compute_cam_per_layer(input_tensor,
                                                    targets,
                                                    eigen_smooth)
-        cam = self.aggregate_multi_layers(cam_per_layer)
-        return preds, masks, cam
+        return self.aggregate_multi_layers(cam_per_layer)
     
     def get_target_width_height(self, input_tensor: torch.Tensor) -> Tuple[int, int]:
         return IMG_WIDTH, IMG_HEIGHT
