@@ -60,7 +60,8 @@ def show_cam_on_image(img: np.ndarray,
                 Got: {image_weight}")
 
     cam = (1 - image_weight) * heatmap + image_weight * img
-    cam = cam / np.max(cam)
+    # use the same scale for all plots
+    # cam = cam / np.max(cam)
     return np.uint8(255 * cam)
 
 

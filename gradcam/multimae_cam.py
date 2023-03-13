@@ -45,10 +45,16 @@ class MultiMAECAM(BaseCAM):
                 inputs[domain] = torch.autograd.Variable(input, requires_grad=True)
 
         preds, masks = self.activations_and_grads(inputs, **kwargs)
+        
+        for domain in ["rgb", "depth", "semseg"]:
+            if domain not in masks:
+                device = "cuda" if self.cuda else "cpu"
+                masks[domain] = torch.ones_like(list(masks.values())[0]).to(device)
 
         if self.uses_gradients:
             self.model.zero_grad()
-            loss = sum([target(preds[domain], inputs[domain], masks[domain]) for domain, target in targets.items()])
+            loss = sum([target(preds[domain], torch.zeros_like(inputs[domain]), masks[domain]) if domain != "semseg" 
+                        else target(preds[domain]) for domain, target in targets.items()])
             loss.backward(retain_graph=True)
 
         cam_per_layer = self.compute_cam_per_layer(inputs,

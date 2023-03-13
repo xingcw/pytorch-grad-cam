@@ -64,6 +64,20 @@ class SemanticSegmentationTarget:
 
     def __call__(self, model_output):
         return (model_output[self.category, :, :] * self.mask).sum()
+    
+class MultiMAESemanticSegmentationTarget:
+    """ Gets a binary spatial mask and a category,
+        And return the sum of the category scores,
+        of the pixels in the mask. """
+
+    def __init__(self, category, mask):
+        self.category = category
+        self.mask = mask
+        if torch.cuda.is_available():
+            self.mask = self.mask.cuda()
+
+    def __call__(self, model_output):
+        return (model_output[:, self.category, :, :] * self.mask).sum()
 
 
 class FasterRCNNBoxScoreTarget:
