@@ -12,6 +12,13 @@ class ActionErrTarget:
     
     def __call__(self, student_act):
         return torch.mean((student_act - self.label) ** 2)
+    
+class ActionTarget:
+    def __init__(self, action_id=0):
+        self.idx = action_id
+    
+    def __call__(self, student_act):
+        return torch.sum(student_act)
 
 
 def reshape_transform(tensor, height=14, width=14):
